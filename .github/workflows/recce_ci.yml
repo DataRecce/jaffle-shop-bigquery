@@ -17,6 +17,7 @@ jobs:
           dbt_cloud_base_job_id: 747906
           dbt_cloud_current_job_id: 747907
           failure_on_error: true
+          git_sha: ${{ github.event.pull_request.head.sha }}
 
       - name: Upload DBT Artifacts for CICD job
         uses: actions/upload-artifact@v4
