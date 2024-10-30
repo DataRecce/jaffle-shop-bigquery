@@ -4,8 +4,34 @@ on:
     branches: [main]
 
 jobs:
-  check-pull-request:
+  prepare-artifacts:
     name: Prepare for Recce
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the dbt cloud job and fetch artifacts for Recce
+        uses: datarecce/dbt-cloud-action@main
+        id: recce_dbt_cloud_run
+        with:
+          dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
+          dbt_cloud_account_id: 62083
+          dbt_cloud_base_job_id: 747906
+          dbt_cloud_current_job_id: 747907
+          failure_on_error: true
+
+      - name: Upload DBT Artifacts for CICD job
+        uses: actions/upload-artifact@v4
+        with:
+          name: target
+          path: target/
+
+      - name: Upload DBT Artifacts for Prod job
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-base
+          path: target-base/
+
+  recce-run:
+    needs: prepare-artifacts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,20 +46,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Trigger the dbt cloud job and fetch artifacts for Recce
-        uses: datarecce/dbt-cloud-action@main
-        id: recce_dbt_cloud_run
-        with:
-          dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
-          dbt_cloud_account_id: 62083
-          dbt_cloud_base_job_id: 747906
-          dbt_cloud_current_job_id: 747907
-          failure_on_error: true
-
       - uses: "google-github-actions/auth@v2"
         id: google-auth
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}
+
+      - name: Download artifactss
+        uses: actions/download-artifact@v4
+
+      - name: Update dbt dependencies
+        run: dbt deps
 
       - name: Run Recce in cloud mode
         env:

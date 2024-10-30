@@ -42,6 +42,7 @@ joined as (
         customer_orders_summary.lifetime_spend_pretax,
         customer_orders_summary.lifetime_tax_paid,
         customer_orders_summary.lifetime_spend,
+        customer_orders_summary.lifetime_spend as dummy,
 
         case
             when customer_orders_summary.is_repeat_buyer then 'returning'
