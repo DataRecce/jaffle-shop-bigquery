@@ -249,7 +249,7 @@ pyyaml==6.0.1
     #   dbt-core
     #   dbt-semantic-interfaces
     #   pre-commit
-recce==0.37.0
+recce~=0.37.0
     # via -r requirements.in
 referencing==0.35.1
     # via
