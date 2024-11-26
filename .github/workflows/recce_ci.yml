@@ -28,6 +28,7 @@ jobs:
       - name: Trigger the dbt cloud job and fetch artifacts for Recce
         uses: datarecce/dbt-cloud-action@main
         id: recce_dbt_cloud_run
+        continue-on-error: true
         with:
           dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
           dbt_cloud_account_id: 62083
