@@ -28,7 +28,6 @@ jobs:
       - name: Trigger the dbt cloud job and fetch artifacts for Recce
         uses: datarecce/dbt-cloud-action@main
         id: recce_dbt_cloud_run
-        continue-on-error: true
         with:
           dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
           dbt_cloud_account_id: 62083
@@ -36,7 +35,7 @@ jobs:
           dbt_cloud_current_job_id: 768650
           git_sha: ${{ github.event.pull_request.head.sha }}
           schema_override: "PR_${{ github.event.pull_request.number }}"
-          failure_on_error: false
+          failure_on_error: true
 
       - uses: "google-github-actions/auth@v2"
         id: google-auth
