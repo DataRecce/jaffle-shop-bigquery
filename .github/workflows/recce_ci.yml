@@ -6,11 +6,14 @@ on:
 jobs:
   check-pull-request:
     name: Prepare for Recce
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      RECCE_STATE_PASSWORD: ${{ secrets.RECCE_STATE_PASSWORD }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - uses: actions/setup-python@v5
         with:
@@ -18,7 +21,9 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install -U recce
 
       - name: Trigger the dbt cloud job and fetch artifacts for Recce
         uses: datarecce/dbt-cloud-action@main
@@ -27,7 +32,9 @@ jobs:
           dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
           dbt_cloud_account_id: 62083
           dbt_cloud_base_job_id: 747906
-          dbt_cloud_current_job_id: 747907
+          dbt_cloud_current_job_id: 768650
+          git_sha: ${{ github.event.pull_request.head.sha }}
+          schema_override: "PR_${{ github.event.pull_request.number }}"
           failure_on_error: true
 
       - uses: "google-github-actions/auth@v2"
@@ -35,26 +42,27 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}
 
-      - name: Run Recce in cloud mode
+      - name: Run dbt
+        run: |
+          pwd
+          tree -L 1
+          dbt deps
+          dbt docs generate --select state:modified --defer --state target-base
         env:
           BQ_PROJECT: ${{ steps.google-auth.outputs.project_id }}
-          BQ_DATASET: recce_ci
+          BQ_DATASET: "PR_${{ github.event.pull_request.number }}"
           BQ_KEYFILE_PATH: ${{ steps.google-auth.outputs.credentials_file_path }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          RECCE_STATE_PASSWORD: ${{ secrets.RECCE_STATE_PASSWORD }}
+
+      - name: Run Recce in cloud mode
         run: recce run --cloud
+        env:
+          BQ_PROJECT: ${{ steps.google-auth.outputs.project_id }}
+          BQ_DATASET: "PR_${{ github.event.pull_request.number }}"
+          BQ_KEYFILE_PATH: ${{ steps.google-auth.outputs.credentials_file_path }}
 
       - name: Prepare Recce Summary
         id: recce-summary
-        env:
-          BQ_PROJECT: ${{ steps.google-auth.outputs.project_id }}
-          BQ_DATASET: recce_ci
-          BQ_KEYFILE_PATH: ${{ steps.google-auth.outputs.credentials_file_path }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          RECCE_STATE_PASSWORD: ${{ secrets.RECCE_STATE_PASSWORD }}
         run: |
-          set -eo pipefail
-
           recce summary --cloud > recce_summary.md
 
           # Add next steps message
@@ -76,6 +84,10 @@ jobs:
             For the full summary, please check the Job Summary page: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
             " >> recce_summary.md
           fi
+        env:
+          BQ_PROJECT: ${{ steps.google-auth.outputs.project_id }}
+          BQ_DATASET: "PR_${{ github.event.pull_request.number }}"
+          BQ_KEYFILE_PATH: ${{ steps.google-auth.outputs.credentials_file_path }}
 
       - name: Comment on pull request
         uses: thollander/actions-comment-pull-request@v2
