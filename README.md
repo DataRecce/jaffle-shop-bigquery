@@ -10,11 +10,11 @@ This README will guide you through setting up the project on dbt Cloud. Working 
 Ready to go? Grab some water and a nice snack, and let's dig in!
 
 <div>
- <a href="https://www.loom.com/share/a90b383eea594a0ea41e91af394b2811?t=0&sid=da832f06-c08e-43e7-acae-a2a3d8d191bd">
+ <a href="https://www.tella.tv/video/welcome-to-the-jaffle-shop-dhep19tu">
    <p>Welcome to the Jaffle Shop - Watch Intro Video</p>
  </a>
- <a href="https://www.loom.com/share/a90b383eea594a0ea41e91af394b2811?t=0&sid=da832f06-c08e-43e7-acae-a2a3d8d191bd">
-   <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/a90b383eea594a0ea41e91af394b2811-with-play.gif">
+ <a href="https://www.tella.tv/video/welcome-to-the-jaffle-shop-dhep19tu">
+   <img style="max-width:300px;" src="assets/welcome-to-the-jaffle-shop.jpg" alt="Welcome to the Jaffle Shop intro video">
  </a>
 </div>
 
